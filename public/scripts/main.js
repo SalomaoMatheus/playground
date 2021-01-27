@@ -5,8 +5,8 @@ const Application = PIXI.Application,
     Sprite = PIXI.Sprite;
 
 const app = new Application({ 
-    width: 256,        
-    height: 256,       
+    width: 800,        
+    height: 600,       
     antialias: true,   
     transparent: false,
     resolution: 1      
@@ -14,7 +14,10 @@ const app = new Application({
 app.renderer.backgroundColor = 0x061639;
 document.body.appendChild(app.view);
 
-loader.add("images/anyImage.png").load(setup);
+loader
+    .add("images/player.png")
+    .add("images/shoot.png")
+.load(setup);
 
 function keyboard(value) {
     let key = {};
@@ -66,9 +69,10 @@ function keyboard(value) {
 let sprite, state;
 
 function setup() {
-    sprite = new Sprite(resources["images/anyImage.png"].texture);
-    sprite.x = 120;
-    sprite.y = 120;
+    sprite = new Sprite(resources["images/player.png"].texture);
+    shoot = new Sprite(resources["images/shoot.png"].texture);
+    sprite.x = 368;
+    sprite.y = 268;
     //sprite.position.set(x, y)
     sprite.vx = 0;
     sprite.vy = 0;
