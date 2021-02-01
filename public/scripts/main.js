@@ -1,9 +1,15 @@
+import { keyboard } from './utils.js';
 const type = !PIXI.utils.isWebGLSupported() ? "canvas" : "WebGL";
+
+// Definições
 const Application = PIXI.Application,
+    TextStyle = PIXI.TextStyle,
     loader = PIXI.loader,
     resources = PIXI.loader.resources,
-    Sprite = PIXI.Sprite;
+    Sprite = PIXI.Sprite,
+    renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0x1099bb});
 
+// Parâmetros da Aplicação.
 const app = new Application({ 
     width: 800,        
     height: 600,       
@@ -11,116 +17,97 @@ const app = new Application({
     transparent: false,
     resolution: 1      
 });
-app.renderer.backgroundColor = 0x061639;
 document.body.appendChild(app.view);
 
+let style = new TextStyle({
+  fontFamily: "Tahoma",
+  fontSize: 25,
+  fill: "white",
+  dropShadow: true,
+  dropShadowColor: "#000000",
+  dropShadowBlur: 4,
+  dropShadowAngle: Math.PI / 6,
+  dropShadowDistance: 6,
+});
+
+//Carrega imagens em Cache
 loader
     .add("images/player.png")
-    .add("images/shoot.png")
 .load(setup);
 
-function keyboard(value) {
-    let key = {};
-    key.value = value;
-    key.isDown = false;
-    key.isUp = true;
-    key.press = undefined;
-    key.release = undefined;
-
-    //The `downHandler`
-    key.downHandler = event => {
-      if (event.key === key.value) {
-        if (key.isUp && key.press) key.press();
-        key.isDown = true;
-        key.isUp = false;
-        event.preventDefault();
-      }
-    };
-  
-    //The `upHandler`
-    key.upHandler = event => {
-      if (event.key === key.value) {
-        if (key.isDown && key.release) key.release();
-        key.isDown = false;
-        key.isUp = true;
-        event.preventDefault();
-      }
-    };
-  
-    //Attach event listeners
-    const downListener = key.downHandler.bind(key);
-    const upListener = key.upHandler.bind(key);
-    
-    window.addEventListener(
-      "keydown", downListener, false
-    );
-    window.addEventListener(
-      "keyup", upListener, false
-    );
-    
-    // Detach event listeners
-    key.unsubscribe = () => {
-      window.removeEventListener("keydown", downListener);
-      window.removeEventListener("keyup", upListener);
-    };
-    return key;
-}
-
-let sprite, state;
-
+let player, state, bg, message;
 function setup() {
-    sprite = new Sprite(resources["images/player.png"].texture);
-    shoot = new Sprite(resources["images/shoot.png"].texture);
-    sprite.x = 368;
-    sprite.y = 268;
-    //sprite.position.set(x, y)
-    sprite.vx = 0;
-    sprite.vy = 0;
-    app.stage.addChild(sprite);
+    //Parâmetros do Sprite do Player
+    player = new Sprite(resources["images/player.png"].texture);
+    player.x = 368;
+    player.y = 268;
+    player.vx = 0;
+    player.vy = 0;
+    const playerSpeed = 8; 
 
-    let left = keyboard("ArrowLeft"),
-        up = keyboard("ArrowUp"),
-        right = keyboard("ArrowRight"),
-        down = keyboard("ArrowDown");
+    // Parâmetros do Backgroud
+    bg = new Sprite(PIXI.Texture.WHITE);
+    bg.width = app.screen.width;
+    bg.height = app.screen.height;
+    bg.tint = 0x9FC5E8;
+    bg.interactive = true;
+    bg.on('click', function(){
+        console.log('hello');
+    });
+
+    // Parâmetros de Texto
+    message = new PIXI.Text("Text Sample", style);
+    message.position.set(18, 20);
+
+    // Adicionando à cena.
+    app.stage.addChild(bg);
+    app.stage.addChild(player);
+    app.stage.addChild(message);
+
+    // Controles do Teclado
+    let left = keyboard("a"),
+        up = keyboard("w"),
+        right = keyboard("d"),
+        down = keyboard("s");
 
     //Left
         left.press = () => {
-            sprite.vx = -5;
-            sprite.vy = 0;
+            player.vx = -playerSpeed;
+            player.vy = 0;
         };
         left.release = () => {
-            if (!right.isDown && sprite.vy === 0) {
-            sprite.vx = 0;
+            if (!right.isDown && player.vy === 0) {
+            player.vx = 0;
             }
         };
     //Up
         up.press = () => {
-            sprite.vy = -5;
-            sprite.vx = 0;
+            player.vy = -playerSpeed;
+            player.vx = 0;
         };
         up.release = () => {
-            if (!down.isDown && sprite.vx === 0) {
-            sprite.vy = 0;
+            if (!down.isDown && player.vx === 0) {
+            player.vy = 0;
             }
         };
     //Right
         right.press = () => {
-            sprite.vx = 5;
-            sprite.vy = 0;
+            player.vx = playerSpeed;
+            player.vy = 0;
         };
         right.release = () => {
-            if (!left.isDown && sprite.vy === 0) {
-            sprite.vx = 0;
+            if (!left.isDown && player.vy === 0) {
+            player.vx = 0;
             }
         };
     //Down
         down.press = () => {
-            sprite.vy = 5;
-            sprite.vx = 0;
+            player.vy = playerSpeed;
+            player.vx = 0;
         };
         down.release = () => {
-            if (!up.isDown && sprite.vx === 0) {
-            sprite.vy = 0;
+            if (!up.isDown && player.vx === 0) {
+            player.vy = 0;
             }
         };
 
@@ -131,6 +118,7 @@ function setup() {
 const gameLoop = (delta) => state(delta);
 
 function play(delta) {
-    sprite.x += sprite.vx;
-    sprite.y += sprite.vy;
+    player.x += player.vx;
+    player.y += player.vy;
+    
 }
