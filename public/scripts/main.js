@@ -1,4 +1,4 @@
-import { keyboard, hitTestRectangle } from './utils.js';
+import { keyboard, hitTestRectangle, rotateToPoint } from './utils.js';
 const type = !PIXI.utils.isWebGLSupported() ? "canvas" : "WebGL";
 
 // Definições
@@ -34,9 +34,13 @@ let style = new TextStyle({
 //Carrega imagens em Cache
 loader
     .add("images/player.png")
+    .add("images/shoot.png")
 .load(setup);
 
-let player, state, bg, message, rectangle;
+let player, bullet, state, bg, message, rectangle;
+let bullets = [];
+const bulletSpeed = 5;
+
 function setup() {
     //Parâmetros do Sprite do Player
     player = new Sprite(resources["images/player.png"].texture);
@@ -52,9 +56,6 @@ function setup() {
     bg.height = app.screen.height;
     bg.tint = 0x9FC5E8;
     bg.interactive = true;
-    bg.on('click', function(){
-        console.log('hello');
-    });
 
     // Parâmetros de Texto
     message = new PIXI.Text("Não enconstou.", style);
@@ -79,7 +80,54 @@ function setup() {
         right = keyboard("d"),
         down = keyboard("s");
 
-    //Left
+    player.anchor.x = 0.5;  
+    player.anchor.y = 0.5;
+
+    bg.on("click", function(e){  
+        shoot(player.rotation, {
+            x: player.position.x+Math.cos(player.rotation)*20,
+            y: player.position.y+Math.sin(player.rotation)*20
+        });
+    })
+
+    state = play;    
+    app.ticker.add(gameLoop);
+}
+
+const gameLoop = (delta) => state(delta);
+
+function shoot(rotation, startPosition){  
+    bullet = new Sprite(resources["images/shoot.png"].texture);
+    bullet.x = startPosition.x;
+    bullet.y = startPosition.y;
+    bullet.rotation = rotation;
+    app.stage.addChild(bullet);
+    bullets.push(bullet);
+}
+
+function play(delta) {
+// player.x += player.vx;
+// player.y += player.vy;
+    bg.on('mousemove', (e) => {
+        player.rotation = rotateToPoint(e.data.global.x, e.data.global.y, player.position.x, player.position.y);
+    });
+
+    for(var b=bullets.length-1;b>=0;b--){
+        bullets[b].x += Math.cos(bullets[b].rotation)*bulletSpeed;
+        bullets[b].y += Math.sin(bullets[b].rotation)*bulletSpeed;
+    }
+    if (hitTestRectangle(player, rectangle)) {
+        message.text = "Encostou!";
+        rectangle.tint = 0xCC0000;
+    } else {
+        message.text = "Não enconstou.";
+        rectangle.tint = 0x6AA84F;
+    }
+}
+
+function teste (){
+
+        //Left
         left.press = () => {
             player.vx = -playerSpeed;
             player.vy = 0;
@@ -119,23 +167,4 @@ function setup() {
             player.vy = 0;
             }
         };
-
-    state = play;    
-    app.ticker.add(gameLoop);
-}
-
-const gameLoop = (delta) => state(delta);
-
-function play(delta) {
-    player.x += player.vx;
-    player.y += player.vy;
-
-  if (hitTestRectangle(player, rectangle)) {
-    message.text = "Encostou!";
-    rectangle.tint = 0xCC0000;
-  } else {
-    message.text = "Não enconstou.";
-    rectangle.tint = 0x6AA84F;
-  }
-    
 }
