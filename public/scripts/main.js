@@ -1,8 +1,9 @@
-import { keyboard } from './utils.js';
+import { keyboard, hitTestRectangle } from './utils.js';
 const type = !PIXI.utils.isWebGLSupported() ? "canvas" : "WebGL";
 
 // Definições
 const Application = PIXI.Application,
+    Graphics = PIXI.Graphics,
     TextStyle = PIXI.TextStyle,
     loader = PIXI.loader,
     resources = PIXI.loader.resources,
@@ -23,11 +24,11 @@ let style = new TextStyle({
   fontFamily: "Tahoma",
   fontSize: 25,
   fill: "white",
-  dropShadow: true,
-  dropShadowColor: "#000000",
-  dropShadowBlur: 4,
-  dropShadowAngle: Math.PI / 6,
-  dropShadowDistance: 6,
+//   dropShadow: true,
+//   dropShadowColor: "#000000",
+//   dropShadowBlur: 4,
+//   dropShadowAngle: Math.PI / 6,
+//   dropShadowDistance: 6,
 });
 
 //Carrega imagens em Cache
@@ -35,7 +36,7 @@ loader
     .add("images/player.png")
 .load(setup);
 
-let player, state, bg, message;
+let player, state, bg, message, rectangle;
 function setup() {
     //Parâmetros do Sprite do Player
     player = new Sprite(resources["images/player.png"].texture);
@@ -56,13 +57,21 @@ function setup() {
     });
 
     // Parâmetros de Texto
-    message = new PIXI.Text("Text Sample", style);
+    message = new PIXI.Text("Não enconstou.", style);
     message.position.set(18, 20);
 
+    rectangle = new Graphics();
+    rectangle.beginFill(0x6AA84F);
+    rectangle.drawRect(0, 0, 64, 64);
+    rectangle.endFill();
+    rectangle.x = 170;
+    rectangle.y = 170;
+    
     // Adicionando à cena.
     app.stage.addChild(bg);
     app.stage.addChild(player);
     app.stage.addChild(message);
+    app.stage.addChild(rectangle);
 
     // Controles do Teclado
     let left = keyboard("a"),
@@ -120,5 +129,13 @@ const gameLoop = (delta) => state(delta);
 function play(delta) {
     player.x += player.vx;
     player.y += player.vy;
+
+  if (hitTestRectangle(player, rectangle)) {
+    message.text = "Encostou!";
+    rectangle.tint = 0xCC0000;
+  } else {
+    message.text = "Não enconstou.";
+    rectangle.tint = 0x6AA84F;
+  }
     
 }
