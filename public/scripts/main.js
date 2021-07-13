@@ -39,16 +39,16 @@ loader
 
 let player, bullet, state, bg, message, rectangle;
 let bullets = [];
-const bulletSpeed = 5;
+const bulletSpeed = 8;
 
 function setup() {
     //Parâmetros do Sprite do Player
     player = new Sprite(resources["images/player.png"].texture);
-    player.x = 368;
-    player.y = 268;
+    player.x = 392;
+    player.y = 292;
     player.vx = 0;
     player.vy = 0;
-    const playerSpeed = 8; 
+    const playerSpeed = 5; 
 
     // Parâmetros do Backgroud
     bg = new Sprite(PIXI.Texture.WHITE);
@@ -58,9 +58,10 @@ function setup() {
     bg.interactive = true;
 
     // Parâmetros de Texto
-    message = new PIXI.Text("Não enconstou.", style);
+    message = new PIXI.Text("Anda com W, atira com mouse", style);
     message.position.set(18, 20);
 
+    // Prâmetros do Retângulo
     rectangle = new Graphics();
     rectangle.beginFill(0x6AA84F);
     rectangle.drawRect(0, 0, 64, 64);
@@ -72,23 +73,29 @@ function setup() {
     app.stage.addChild(bg);
     app.stage.addChild(player);
     app.stage.addChild(message);
-    app.stage.addChild(rectangle);
+    //app.stage.addChild(rectangle);
 
     // Controles do Teclado
-    let left = keyboard("a"),
-        up = keyboard("w"),
-        right = keyboard("d"),
-        down = keyboard("s");
+    let up = keyboard("w");
 
     player.anchor.x = 0.5;  
     player.anchor.y = 0.5;
 
     bg.on("click", function(e){  
         shoot(player.rotation, {
-            x: player.position.x+Math.cos(player.rotation)*20,
-            y: player.position.y+Math.sin(player.rotation)*20
+            x: player.position.x + Math.cos(player.rotation)*16,
+            y: player.position.y + Math.sin(player.rotation*16)
         });
     })
+
+    up.press = () => {
+        player.vx = playerSpeed;
+        player.vy = playerSpeed;
+    };
+    up.release = () => {
+        player.vx = 0;
+        player.vy = 0;
+    };
 
     state = play;    
     app.ticker.add(gameLoop);
@@ -106,23 +113,25 @@ function shoot(rotation, startPosition){
 }
 
 function play(delta) {
-// player.x += player.vx;
-// player.y += player.vy;
+    player.x += Math.cos(player.rotation) * player.vx;
+    player.y += Math.sin(player.rotation) * player.vy;
+
     bg.on('mousemove', (e) => {
         player.rotation = rotateToPoint(e.data.global.x, e.data.global.y, player.position.x, player.position.y);
     });
 
     for(var b=bullets.length-1;b>=0;b--){
-        bullets[b].x += Math.cos(bullets[b].rotation)*bulletSpeed;
-        bullets[b].y += Math.sin(bullets[b].rotation)*bulletSpeed;
+        bullets[b].x += Math.cos(bullets[b].rotation) * bulletSpeed;
+        bullets[b].y += Math.sin(bullets[b].rotation) * bulletSpeed;
     }
-    if (hitTestRectangle(player, rectangle)) {
-        message.text = "Encostou!";
-        rectangle.tint = 0xCC0000;
-    } else {
-        message.text = "Não enconstou.";
-        rectangle.tint = 0x6AA84F;
-    }
+
+    // if (hitTestRectangle(player, rectangle)) {
+    //     message.text = "Encostou!";
+    //     rectangle.tint = 0xCC0000;
+    // } else {
+    //     message.text = "Não enconstou.";
+    //     rectangle.tint = 0x6AA84F;
+    // }
 }
 
 function teste (){
